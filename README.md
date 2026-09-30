@@ -24,4 +24,11 @@ Here we use LT8610, the different component selections
 5. C4 at least 1uF according to INTVCC requirements in datasheet
 6. C2 set to 10pF for boost network feedback loop, should be DNP
 
+## Linear Regulators
+The components U4 and U5 are linear regulators used for both filtering out any switching noise whose source can be the input buck circuit.
 
+The calculation for the Vfb:
+
+Vout=1.2V(1+Rhigh/Rlow)
+if soo, that must mean that 
+1. For the opposition even worse.
