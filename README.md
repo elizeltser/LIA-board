@@ -3,7 +3,7 @@
  
 KiCad project implementing the PCB for the GMOS readout based on the lock-in amplifier (LIA) approach. The board replaces the bench setup (SR860 lock-in + SR560 pre-amplifier + lab supplies) used for the 3T differential measurement of the GMOS active/blind transistor pair.
  
-> **Legend:** `TBD` marks a requirement value that is not yet defined. `TODO` marks design work still to be done. `ASSUMPTION` marks a value used for sizing that must be confirmed.
+> **Legend:** `TODO` marks design work still to be done. `ASSUMPTION` marks a value used for sizing that must be confirmed.
  
 ---
  
@@ -314,7 +314,6 @@ flowchart LR
 | +3.3 V digital LDO | ADP7118ARDZ-3.3-R7 | As above | Same family as +5 V | 625 / USD 2.83 (cheaper alt. TLV76733, 16 V/1 A) |
 | −5 V analog LDO | LT3094EMSE | −1.8 to −20 V in, 500 mA, 0.8 µVrms, PSRR 74 dB @ 1 MHz, 235 mV dropout, V_OUT set by 100 µA × R_SET | Very high PSRR at the switching frequency | 5507 / USD 10.07 |
  
-A charge-pump inverter (e.g. LT1054) was considered as a simpler replacement for the IBB; at ≈ USD 17 and with limited availability it brings no advantage over a second LMR51430. A lower-current buck from the same family (e.g. TPS560430, 36 V / 600 mA, FPWM variant in stock) is a valid alternative that allows a much smaller inductor (see 3.5.1); verify its variant table before use.
  
 ### 3.5 Design Calculations
  
@@ -511,7 +510,7 @@ Supply currents are datasheet maximum values where known, otherwise conservative
 | Demod | Balanced demodulator | AD630 | 2 | Gain ±1 internal resistors | ±5 V | 5 mA | ≈ USD 51 each, 111 in stock |
 | Demod | Post-LPF + ×3 + level shift | OPA2192 | 1 (2 ch) | τ = 500 ms | ±5 V | 2.4 mA | |
 | Readout | X/Y ADC | ADS1220 | 1 | 24-bit ΔΣ, 2 differential ch, SPI, ≤ 2 kSPS | AVDD +5 V, DVDD +3.3 V | 1 mA / 0.1 mA | 4023 in stock |
-| Misc | ESD protection | TBD | — | | +5 V | 5 mA (total) | Per requirement AN-33 |
+| Misc | ESD protection | included in GMOS package | — | | +5 V | 5 mA (total) | Per requirement AN-33 |
  
 OPA2192 total: 11 duals (22 channels, 1 spare).
  
@@ -535,7 +534,8 @@ $$
 f_0 = \frac{1}{2\pi R C}
 $$
  
-U2 integrates U1's output, so the two outputs are inherently 90° apart: U1 output = **sin** (gate excitation, X reference), U2 output = **cos** (Y reference). The reference reports an example with 10 kΩ / 10 nF (calculated 1.59 kHz, measured 1.65 kHz, attributed to component variation) and notes that this oscillator needs only two op amps but has high distortion, because the amplitude is set by the op-amp non-linearity unless an auxiliary gain-control circuit is added [[A2]](#ref-a2).
+U2 integrates U1's output, so the two outputs are inherently 90° apart: U1 output = **sin** (gate excitation, X reference), U2 output = **cos** (Y reference). 
+> This oscillator needs only two op amps but has high distortion, because the amplitude is set by the op-amp non-linearity unless an auxiliary gain-control circuit is added [[A2]](#ref-a2).
  
 ```mermaid
 flowchart LR
@@ -634,7 +634,7 @@ Netlist: [`simulations/quad_osc_tran.cir`](simulations/quad_osc_tran.cir).
  
 ### 5.3 PC Link
  
-**Choice.** USB-UART bridge (CP2102N) behind a digital isolator, rather than the STM32's native USB. Both meet the data rate; the bridge was preferred because (a) the MCU firmware only needs a UART, (b) the PC sees a standard COM port that survives MCU resets and reflashing, and (c) a 2-channel UART is easy and cheap to isolate, whereas isolating native USB needs a dedicated USB isolator. The isolated side of the CP2102N is powered from USB VBUS.
+**Choice.** USB-UART bridge (CP2102N) behind a digital isolator because a 2-channel UART is easy and cheap to isolate. The isolated side of the CP2102N is powered from USB VBUS.
  
 **Protocol (assumption).** ASCII command/response lines for configuration (e.g. `SET GATE 0.9900`, `SET CH 1`, `STREAM ON 100`), and fixed-length binary frames for streaming.
  
